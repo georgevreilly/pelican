@@ -340,14 +340,14 @@ class Content(object):
         return os.path.relpath(
             os.path.abspath(os.path.join(self.settings['PATH'], source_path)),
             os.path.abspath(self.settings['PATH'])
-        )
+        ).replace(os.sep, '/')
 
     @property
     def relative_dir(self):
         return os.path.dirname(os.path.relpath(
             os.path.abspath(self.source_path),
             os.path.abspath(self.settings['PATH']))
-        )
+        ).replace(os.sep, '/')
 
 
 class Page(Content):
