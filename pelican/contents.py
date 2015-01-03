@@ -325,6 +325,11 @@ class Content(object):
         else:
             return self.default_template
 
+    def posixize_path(self, path):
+        """Use '/' as path separator, so that {filename}/foo/bar.jpg will
+        work on Windows as well as on Mac and Linux."""
+        return path.replace(os.sep, '/')
+
     def get_relative_source_path(self, source_path=None):
         """Return the relative path (from the content path) to the given
         source_path.
@@ -337,17 +342,19 @@ class Content(object):
         if source_path is None:
             return None
 
-        return os.path.relpath(
-            os.path.abspath(os.path.join(self.settings['PATH'], source_path)),
-            os.path.abspath(self.settings['PATH'])
-        ).replace(os.sep, '/')
+        return self.posixize_path(
+            os.path.relpath(
+                os.path.abspath(os.path.join(self.settings['PATH'], source_path)),
+                os.path.abspath(self.settings['PATH'])
+            ))
 
     @property
     def relative_dir(self):
-        return os.path.dirname(os.path.relpath(
-            os.path.abspath(self.source_path),
-            os.path.abspath(self.settings['PATH']))
-        ).replace(os.sep, '/')
+        return self.posixize_path(
+            os.path.dirname(
+                os.path.relpath(
+                    os.path.abspath(self.source_path),
+                    os.path.abspath(self.settings['PATH']))))
 
 
 class Page(Content):
