@@ -11,6 +11,7 @@ import os
 import pytz
 import re
 import shutil
+import sys
 import traceback
 import pickle
 import hashlib
@@ -231,13 +232,15 @@ def get_date(string):
 
 
 @contextmanager
-def pelican_open(filename):
+def pelican_open(filename, mode='rb', strip_crs=(sys.platform == 'win32')):
     """Open a file and return its content"""
 
-    with codecs.open(filename, encoding='utf-8') as infile:
+    with codecs.open(filename, mode, encoding='utf-8') as infile:
         content = infile.read()
     if content[0] == codecs.BOM_UTF8.decode('utf8'):
         content = content[1:]
+    if strip_crs:
+        content = content.replace('\r', '')
     yield content
 
 
