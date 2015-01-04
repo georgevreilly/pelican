@@ -25,6 +25,30 @@ SAMPLE_CONFIG = os.path.join(SAMPLES_PATH, "pelican.conf.py")
 SAMPLE_FR_CONFIG = os.path.join(SAMPLES_PATH, "pelican.conf_FR.py")
 
 
+def diff_files(left_name, right_name, encoding='utf8', limit=None, max_length=200):
+    import difflib, codecs
+    def readlines(filename):
+        with codecs.open(filename, "r", encoding) as fp:
+            lines = fp.readlines()
+        lines = [line.rstrip() for line in lines] # Chomp trailing newline
+        lines = [' '.join(line.split()) for line in lines] # normalize whitespace
+        return lines
+    left = readlines(left_name)
+    right = readlines(right_name)
+    i = 0
+    for line in difflib.context_diff(
+            left, right, fromfile=left_name, tofile=right_name, lineterm='', n=3):
+#   d = difflib.Differ()
+#   for line in d.compare(left, right):
+#   for line in difflib._mdiff(left, right, 3):
+        if len(line) > max_length:
+            line = line[:max_length] + "..."
+        print(line)
+        i += 1
+        if limit is not None and i >= limit:
+            return
+
+
 def recursiveDiff(dcmp):
     diff = {
             'diff_files': [os.path.join(dcmp.right, f)
@@ -58,7 +82,11 @@ class TestPelican(LoggedTestCase):
         locale.setlocale(locale.LC_ALL, self.old_locale)
         super(TestPelican, self).tearDown()
 
-    def assertFilesEqual(self, diff):
+    def assertDirsEqualDirCmp(self, left_path, right_path):
+        from filecmp import dircmp
+        dcmp = dircmp(left_path, right_path)
+        diff = recursiveDiff(dcmp)
+
         msg = ("some generated files differ from the expected functional "
                "tests output.\n"
                "This is probably because the HTML generated files "
@@ -66,17 +94,25 @@ class TestPelican(LoggedTestCase):
                "to docs/contribute.rst to update the expected "
                "output of the functional tests.")
 
-        self.assertEqual(diff['left_only'], [], msg=msg)
-        self.assertEqual(diff['right_only'], [], msg=msg)
-        self.assertEqual(diff['diff_files'], [], msg=msg)
+        count = 0
+        for k,v in diff.items():
+            for f in v or []:
+                count += 1
+                path = os.path.relpath(f, right_path)
+                print("Differ {0}: {1}".format(count, path))
+                diff_files(os.path.join(left_path, path), f, limit=None)
 
-    def assertDirsEqual(self, left_path, right_path):
+        assert count == 0, msg
+
+    def assertDirsEqualGitDiff(self, left_path, right_path):
         out, err = subprocess.Popen(
             ['git', 'diff', '--no-ext-diff', '--exit-code', '-w', left_path, right_path],
             env={b'PAGER': b''}, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         ).communicate()
         assert not out, out
         assert not err, err
+
+    assertDirsEqual = assertDirsEqualDirCmp
 
     def test_order_of_generators(self):
         # StaticGenerator must run last, so it can identify files that
