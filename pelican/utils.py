@@ -23,6 +23,7 @@ from functools import partial
 from itertools import groupby
 from jinja2 import Markup
 from operator import attrgetter
+from posixpath import join as posix_join
 
 logger = logging.getLogger(__name__)
 
