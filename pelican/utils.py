@@ -761,4 +761,8 @@ def is_selected_for_writing(settings, path):
         return path in settings['WRITE_SELECTED']
     else:
         return True
-        
+
+
+def path2url(path):
+    return six.moves.urllib_parse.urljoin(
+        "file://", six.moves.urllib.request.pathname2url(path))
