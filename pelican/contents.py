@@ -17,7 +17,7 @@ from pelican import signals
 from pelican.settings import DEFAULT_CONFIG
 from pelican.utils import (slugify, truncate_html_words, memoized, strftime,
                            python_2_unicode_compatible, deprecated_attribute,
-                           path_to_url, set_date_tzinfo, SafeDatetime)
+                           path_to_url, posixize_path, set_date_tzinfo, SafeDatetime)
 
 # Import these so that they're avalaible when you import from pelican.contents.
 from pelican.urlwrappers import (URLWrapper, Author, Category, Tag)  # NOQA
@@ -325,11 +325,6 @@ class Content(object):
         else:
             return self.default_template
 
-    def posixize_path(self, path):
-        """Use '/' as path separator, so that {filename}/foo/bar.jpg will
-        work on Windows as well as on Mac and Linux."""
-        return path.replace(os.sep, '/')
-
     def get_relative_source_path(self, source_path=None):
         """Return the relative path (from the content path) to the given
         source_path.
@@ -342,7 +337,7 @@ class Content(object):
         if source_path is None:
             return None
 
-        return self.posixize_path(
+        return posixize_path(
             os.path.relpath(
                 os.path.abspath(os.path.join(self.settings['PATH'], source_path)),
                 os.path.abspath(self.settings['PATH'])
@@ -350,7 +345,7 @@ class Content(object):
 
     @property
     def relative_dir(self):
-        return self.posixize_path(
+        return posixize_path(
             os.path.dirname(
                 os.path.relpath(
                     os.path.abspath(self.source_path),

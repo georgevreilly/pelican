@@ -370,6 +370,13 @@ def path_to_url(path):
         return '/'.join(split_all(path))
 
 
+def posixize_path(rel_path):
+    """Use '/' as path separator, so that source references,
+    like '{filename}/foo/bar.jpg' or 'extras/favicon.ico',
+    will work on Windows as well as on Mac and Linux."""
+    return rel_path.replace(os.sep, '/')
+
+
 def truncate_html_words(s, num, end_text='...'):
     """Truncates HTML to a certain number of words.
 
