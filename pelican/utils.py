@@ -240,7 +240,7 @@ def pelican_open(filename, mode='rb', strip_crs=(sys.platform == 'win32')):
     if content[0] == codecs.BOM_UTF8.decode('utf8'):
         content = content[1:]
     if strip_crs:
-        content = content.replace('\r', '')
+        content = content.replace('\r\n', '\n')
     yield content
 
 
