@@ -763,6 +763,7 @@ def is_selected_for_writing(settings, path):
         return True
 
 
-def path2url(path):
+def path_to_file_url(path):
+    '''Convert file-system path to file:// URL'''
     return six.moves.urllib_parse.urljoin(
         "file://", six.moves.urllib.request.pathname2url(path))
